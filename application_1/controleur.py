@@ -28,6 +28,8 @@ class ControleurMaxiMarket:
         self.vue.signal_quadrillage_change.connect(self.quadrillage_change)
         self.vue.signal_produit_selectionne_placement.connect(self.produit_selectionne_placement)
         self.vue.signal_produit_place.connect(self.produit_place)
+        self.vue.signal_supprimer_projet.connect(self.supprimer_projet)
+
     
     def maj_vue(self):
         # Afficher le plan
@@ -35,6 +37,7 @@ class ControleurMaxiMarket:
         pixmap = plan.get_pixmap()
         if pixmap:
             self.vue.afficher_plan(pixmap, plan.get_nb_rangs(), plan.get_nb_rayons())
+            
         
         # Mettre à jour les informations du projet
         projet = self.modele.get_projet()
@@ -260,6 +263,52 @@ class ControleurMaxiMarket:
             "Succès",
             f"'{produit}' placé en position ({x}, {y})."
         )
+
+
+    def supprimer_projet(self):
+        projet = self.modele.get_projet()
+        
+        if projet.est_vide():
+            QMessageBox.warning(
+                self.vue,
+                "Avertissement",
+                "Aucun projet à supprimer. Ouvrez d'abord un projet."
+            )
+            return
+        
+        nom_projet = projet.get_nom_projet()
+        reply = QMessageBox.question(
+            self.vue,
+            "Confirmation",
+            f"Êtes-vous sûr de vouloir supprimer le projet '{nom_projet}' ?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            fichier = projet.get_fichier_sauvegarde()
+            if os.path.exists(fichier):
+                try:
+                    os.remove(fichier)
+                    
+                    self.modele = ModeleMaxiMarket()
+                    
+                    self.vue.mettre_a_jour_projet_info("Aucun projet ouvert")
+                    self.vue.mettre_a_jour_plan_info("Aucun plan chargé")
+                    self.vue.mettre_a_jour_produits([], {})
+                    self.vue.mettre_a_jour_table_placements({})
+                    self.vue.afficher_plan(None, 24, 47)
+                    
+                    QMessageBox.information(
+                        self.vue,
+                        "Succès",
+                        f"Le projet '{nom_projet}' a été supprimé avec succès."
+                    )
+                except Exception as e:
+                    QMessageBox.critical(
+                        self.vue,
+                        "Erreur",
+                        f"Erreur lors de la suppression du projet:\n{str(e)}"
+                    )
 
 # Programme principal : test du contrôleur ------------------------------------
 if __name__ == "__main__":

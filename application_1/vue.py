@@ -249,6 +249,7 @@ class PanneauControle(QWidget):
     signal_nouveau_projet = pyqtSignal()
     signal_ouvrir_projet = pyqtSignal()
     signal_sauvegarder_projet = pyqtSignal()
+    signal_supprimer_projet = pyqtSignal()
     signal_charger_plan = pyqtSignal()
     signal_selectionner_produits = pyqtSignal()
     signal_quadrillage_change = pyqtSignal(int, int)
@@ -273,9 +274,14 @@ class PanneauControle(QWidget):
         self.btn_ouvrir_projet.clicked.connect(self.signal_ouvrir_projet.emit)
         self.btn_sauvegarder_projet.clicked.connect(self.signal_sauvegarder_projet.emit)
         
+        self.btn_supprimer_projet = QPushButton("Supprimer Projet")
+        self.btn_supprimer_projet.clicked.connect(self.signal_supprimer_projet.emit)
+        
         projet_layout.addWidget(self.btn_nouveau_projet)
         projet_layout.addWidget(self.btn_ouvrir_projet)
         projet_layout.addWidget(self.btn_sauvegarder_projet)
+        projet_layout.addWidget(self.btn_supprimer_projet)
+
         
         projet_group.setLayout(projet_layout)
         layout.addWidget(projet_group)
@@ -396,6 +402,8 @@ class VueMaxiMarket(QMainWindow):
     signal_quadrillage_change = pyqtSignal(int, int)
     signal_produit_selectionne_placement = pyqtSignal(str)
     signal_produit_place = pyqtSignal(str, int, int)
+    signal_supprimer_projet = pyqtSignal()
+
     
     def __init__(self):
         super().__init__()
@@ -428,6 +436,7 @@ class VueMaxiMarket(QMainWindow):
         self.panneau_controle.signal_selectionner_produits.connect(self.signal_selectionner_produits.emit)
         self.panneau_controle.signal_quadrillage_change.connect(self.signal_quadrillage_change.emit)
         self.panneau_controle.signal_produit_selectionne_placement.connect(self.signal_produit_selectionne_placement.emit)
+        self.panneau_controle.signal_supprimer_projet.connect(self.signal_supprimer_projet.emit)
         self.vue_graphique.scene_graphique.produit_place.connect(self.signal_produit_place.emit)
     
     # Méthodes de mise à jour de la vue
