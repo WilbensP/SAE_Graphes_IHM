@@ -65,7 +65,7 @@ class Produits:
         self.__placements = {} 
         
         # Charger produits
-        self.charger_depuis_fichier("produits_selectionnes.json")
+        self.charger_depuis_fichier("Ressources/produits_selectionnes.json")
     
     def charger_depuis_fichier(self, chemin_fichier: str) -> bool:
         try:
