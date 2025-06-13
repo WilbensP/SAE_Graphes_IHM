@@ -4,7 +4,7 @@
   "date_creation": "2025-06-12 14:00:02",
   "nom_magasin": "MaxiMaket",
   "adresse_magasin": "656 Yervant Toumanianz, Calais 62100",
-  "chemin_plan": "Ressources/plan.jpg",
+  "chemin_plan": "../Ressources/plan.jpg",
   "nb_rangs": 24,
   "nb_rayons": 40,
   "produits_magasin": [
