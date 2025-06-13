@@ -5,8 +5,8 @@ import math
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QPixmap
 
+# Permet de copier un fichier d'une source vers une destination
 def copier_fichier(source, destination):
-    """Copie un fichier de la source vers la destination"""
     try:
         with open(source, 'rb') as fsrc:
             with open(destination, 'wb') as fdst:
@@ -16,8 +16,8 @@ def copier_fichier(source, destination):
         print(f"Erreur lors de la copie du fichier: {str(e)}")
         return False
 
+
 class ProjetModel(QObject):
-    """Modèle pour la gestion des projets MaxiMarket"""
     
     projet_charge = pyqtSignal(dict)
     erreur = pyqtSignal(str)
@@ -30,7 +30,7 @@ class ProjetModel(QObject):
         if not os.path.exists(self.dossier_projets):
             os.makedirs(self.dossier_projets)
         self.pixmap = None
-    
+    # Permet de charger un projet dans un fichier JSON 
     def charger_projet(self, chemin_json, projet=None):
         """Charge un projet depuis un fichier JSON"""
         try:
@@ -61,15 +61,12 @@ class ProjetModel(QObject):
             return False
     
     def get_projet_actuel(self):
-        """Retourne le projet actuellement chargé"""
         return self.projet_actuel
     
     def get_chemin_projet_actuel(self):
-        """Retourne le chemin du projet actuellement chargé"""
         return self.chemin_projet_actuel
     
     def get_projets_disponibles(self):
-        """Retourne la liste des projets disponibles"""
         projets = []
         
         # Chercher les fichiers .json dans le répertoire courant et le dossier projets
@@ -94,7 +91,6 @@ class ProjetModel(QObject):
         return projets
 
 class ProduitsModel(QObject):
-    """Modèle pour la gestion des produits et listes de courses"""
     
     produits_charges = pyqtSignal(list)
     liste_generee = pyqtSignal(list)
@@ -105,13 +101,12 @@ class ProduitsModel(QObject):
         self.liste_courses = []
     
     def charger_produits(self, produits):
-        """Charge la liste des produits"""
         self.tous_produits = sorted(produits)
         self.produits_charges.emit(self.tous_produits)
         return self.tous_produits
     
+    # Permet de générer une liste aléatoire de produits
     def generer_liste_aleatoire(self, nombre_produits=10):
-        """Génère une liste aléatoire de produits"""
         if not self.tous_produits:
             return []
         
@@ -121,34 +116,34 @@ class ProduitsModel(QObject):
         self.liste_generee.emit(choix)
         return choix
     
+    # Permet d'ajouter des produits de la liste de courses
     def ajouter_produit_liste(self, produit):
-        """Ajoute un produit à la liste de courses"""
         if produit not in self.liste_courses:
             self.liste_courses.append(produit)
             return True
         return False
     
+    # Permet de supprimer un produit de la liste de courses
     def supprimer_produit_liste(self, produit):
-        """Supprime un produit de la liste de courses"""
         if produit in self.liste_courses:
             self.liste_courses.remove(produit)
             return True
         return False
     
+    # Permet de réinitialiser la liste de courses
     def reinitialiser_liste(self):
-        """Remet à zéro la liste de courses"""
         self.liste_courses = []
     
+    # Permet de récupérer tous les produits
     def get_tous_produits(self):
-        """Retourne tous les produits"""
         return self.tous_produits
     
+    # Permet de récupérer la liste de courses actuelle
     def get_liste_courses(self):
-        """Retourne la liste de courses actuelle"""
         return self.liste_courses
     
+    # Permet de sauvegarder la liste de courses dans un fichier
     def sauvegarder_liste(self, chemin_fichier, nom_magasin="MaxiMarket"):
-        """Sauvegarde la liste de courses dans un fichier"""
         try:
             with open(chemin_fichier, "w", encoding="utf-8") as f:
                 f.write(f"Liste de courses - {nom_magasin}\n")
@@ -161,21 +156,17 @@ class ProduitsModel(QObject):
             return False
 
 class CalculChemin:
-    """Classe pour calculer le chemin optimal entre les produits"""
     def __init__(self, point_depart=(28, 21)):
         self.point_depart = point_depart
     
+    # Permet de calculer la distance euclidienne entre deux positions
     def calculer_distance(self, pos1, pos2):
-        """Calcule la distance euclidienne entre deux positions"""
         x1, y1 = pos1
         x2, y2 = pos2
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     
+    # Permet de calculer le chemin optimal pour récupérer tous les produits
     def calculer_chemin_optimal(self, produits, positions):
-        """Calcule le chemin optimal pour récupérer tous les produits
-        
-        Utilise l'algorithme du plus proche voisin (greedy)
-        """
         if not produits or not positions:
             return []
         
