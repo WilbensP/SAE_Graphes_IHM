@@ -137,6 +137,11 @@ class MaxiMarketController(QObject):
     def afficher_erreur(self, message):
         self.view.afficher_message("Erreur", message, "error")
     
+    # on recupere les produits du magasin
+    def produits_charges(self, produits):
+        self.tous_produits = produits
+        self.view.mettre_a_jour_produits(produits)
+
     def selection_produit(self, produit):
         self.view.mettre_a_jour_produit_selectionne(produit)
         if produit:
