@@ -10,28 +10,28 @@ class MaxiMarketController(QObject):
     def __init__(self):
         super().__init__()
         
-        # Initialisation des modèles
+        # Icreation modeles
         self.projet_model = ProjetModel()
         self.produits_model = ProduitsModel()
         self.calcul_chemin = CalculChemin()
         
-        # Initialisation de la vue
+        # creation vue
         self.view = MaxiMarketMainWindow()
         
-        # Connexion des signaux
+        # signaux
         self.connecter_signaux()
         
-        # Variables d'état
+        # Variables
         self.tous_produits = []
         self.chemin_courant = []
         
-        # Charger les projets disponibles
+        # Charger projets 
         self.charger_projets_disponibles()
     
     def connecter_signaux(self):
         """Connecte tous les signaux entre les modèles et la vue"""
         
-        # Signaux de la vue vers le contrôleur
+        # Signaux controleur
         self.view.ouvrir_projet_demande.connect(self.ouvrir_projet)
         self.view.produit_selectionne.connect(self.selection_produit)
         self.view.ajouter_produit_demande.connect(self.ajouter_produit_liste)
@@ -41,7 +41,7 @@ class MaxiMarketController(QObject):
         self.view.enregistrer_liste_demande.connect(self.enregistrer_liste)
         self.view.calculer_chemin_demande.connect(self.calculer_chemin)
         
-        # Signaux des modèles vers le contrôleur
+        # Signaux controleur
         self.projet_model.projet_charge.connect(self.projet_charge)
         self.projet_model.erreur.connect(self.afficher_erreur)
         self.produits_model.produits_charges.connect(self.produits_charges)
@@ -96,11 +96,11 @@ class MaxiMarketController(QObject):
     
     def projet_charge(self, projet):
         """Callback appelé quand un projet est chargé"""
-        # Mettre à jour le titre de la fenêtre
+        # fenetre
         nom_magasin = projet.get('nom_magasin', 'Plan du magasin')
         self.view.mettre_a_jour_titre(f"MaxiMarket - {nom_magasin}")
         
-        # Charger le plan dans la vue
+        # Charger plan
         chemin_plan = projet.get("chemin_plan_absolu")
         if chemin_plan and os.path.exists(chemin_plan):
             scene = self.view.get_rendu().scene()
@@ -118,11 +118,11 @@ class MaxiMarketController(QObject):
                 
                 self.view.get_rendu().fitInView(scene.sceneRect())
         
-        # Charger les produits
+        # Charger produits
         if "produits_magasin" in projet:
             self.produits_model.charger_produits(projet["produits_magasin"])
         
-        # Vider la liste de courses et le chemin
+        # Vider liste de courses et chemin
         self.view.vider_liste()
         self.view.vider_table_chemin()
         self.chemin_courant = []
@@ -169,7 +169,7 @@ class MaxiMarketController(QObject):
         for produit in produits:
             self.view.ajouter_item_liste(produit)
         
-        # Vider le chemin car la liste a changé
+        # Vider chemin
         scene = self.view.get_rendu().scene()
         scene.effacer_chemin()
         self.view.vider_table_chemin()
@@ -180,7 +180,7 @@ class MaxiMarketController(QObject):
         self.produits_model.reinitialiser_liste()
         self.view.vider_liste()
         
-        # Effacer le chemin
+        # Effacer chemin
         scene = self.view.get_rendu().scene()
         scene.effacer_chemin()
         self.view.vider_table_chemin()
@@ -213,18 +213,18 @@ class MaxiMarketController(QObject):
             self.view.afficher_message("Info", "La liste est vide, impossible de calculer un chemin.")
             return
         
-        # Récupérer les placements des produits
+        # Recuperer placements produits
         scene = self.view.get_rendu().scene()
         placements = scene.coordonnees_produits
         
-        # Calculer le chemin optimal
+        # chemin optimal
         self.chemin_courant = self.calcul_chemin.calculer_chemin_optimal(liste_courses, placements)
         
         if self.chemin_courant:
-            # Afficher le chemin sur le plan
+            # Afficher chemin 
             scene.afficher_chemin(self.chemin_courant)
             
-            # Mettre à jour la table des informations
+            # table 
             self.view.mettre_a_jour_table_chemin(self.chemin_courant)
             
             self.view.afficher_message(
