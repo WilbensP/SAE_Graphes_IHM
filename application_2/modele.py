@@ -6,7 +6,6 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QPixmap
 
 def copier_fichier(source, destination):
-    """Copie un fichier de la source vers la destination"""
     try:
         with open(source, 'rb') as fsrc:
             with open(destination, 'wb') as fdst:
@@ -38,12 +37,12 @@ class ProjetModel(QObject):
                 with open(chemin_json, "r", encoding="utf-8") as f:
                     projet = json.load(f)
             
-            # Validation du format
+            # format
             if not all(key in projet for key in ["nom_projet", "chemin_plan"]):
                 self.erreur.emit("Le fichier JSON ne contient pas les données attendues.")
                 return False
             
-            # Vérification du plan
+            # plan
             dossier_projet = os.path.dirname(chemin_json)
             chemin_plan = os.path.join(dossier_projet, projet["chemin_plan"])
             
@@ -72,7 +71,7 @@ class ProjetModel(QObject):
         """Retourne la liste des projets disponibles"""
         projets = []
         
-        # Chercher les fichiers .json dans le répertoire courant et le dossier projets
+        # Chercher les .json
         dossiers = ['.', self.dossier_projets]
         for dossier in dossiers:
             if os.path.exists(dossier):
@@ -162,7 +161,7 @@ class ProduitsModel(QObject):
 
 class CalculChemin:
     """Classe pour calculer le chemin optimal entre les produits"""
-    def __init__(self, point_depart=(28, 21)):
+    def __init__(self, point_depart=(29, 3)): 
         self.point_depart = point_depart
     
     def calculer_distance(self, pos1, pos2):
@@ -179,13 +178,13 @@ class CalculChemin:
         if not produits or not positions:
             return []
         
-        # Algorithme du plus proche voisin
+        # Algorithme
         chemin = []
         produits_restants = list(produits)
         position_courante = self.point_depart
         
         while produits_restants:
-            # Trouver le produit le plus proche
+            # Trouver produit 
             produit_plus_proche = None
             distance_min = float('inf')
             
@@ -201,7 +200,7 @@ class CalculChemin:
                             produit_plus_proche = produit
                             position_plus_proche = pos
             
-            # Ajouter le produit au chemin
+            # Ajouter produit
             if produit_plus_proche:
                 chemin.append((produit_plus_proche, position_plus_proche))
                 position_courante = position_plus_proche

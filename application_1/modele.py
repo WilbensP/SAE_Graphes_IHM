@@ -4,7 +4,7 @@ import json
 from PyQt6.QtGui import QPixmap
 
 # -----------------------------------------------------------------------------
-# --- class Plan
+#  class plan
 # -----------------------------------------------------------------------------
 class Plan:
     def __init__(self, chemin_plan: str = ""):
@@ -56,7 +56,7 @@ class Plan:
         return 0, 0
 
 # -----------------------------------------------------------------------------
-# --- class Produits
+#  class produit
 # -----------------------------------------------------------------------------
 class Produits:
     def __init__(self):
@@ -64,7 +64,7 @@ class Produits:
         self.__produits_magasin = []
         self.__placements = {} 
         
-        # Charger produits
+        # charger les  produits de la liste de course
         self.charger_depuis_fichier("Ressources/produits_selectionnes.json")
     
     def charger_depuis_fichier(self, chemin_fichier: str) -> bool:
@@ -88,7 +88,7 @@ class Produits:
     
     def set_produits_magasin(self, produits_selectionnes: list):
         self.__produits_magasin = produits_selectionnes.copy()
-        # Réinitialiser les placements
+        # reinitialiser le placement des produit
         self.__placements.clear()
     
     def get_produits_magasin(self) -> list:
@@ -118,7 +118,7 @@ class Produits:
         return produit in self.__placements.values()
 
 # -----------------------------------------------------------------------------
-# --- class Projet
+# class projet
 # -----------------------------------------------------------------------------
 class Projet:
     def __init__(self):
@@ -188,18 +188,23 @@ class Projet:
             print(f"Erreur lors du chargement des données : {e}")
         return {}
     
+    #mettre nom au projet
     def get_nom_projet(self):
         return self.__nom_projet
     
+    # mettre nom auteur du projet
     def get_auteur(self):
         return self.__auteur
     
+    #mettre date creation du projet
     def get_date_creation(self):
         return self.__date_creation
     
+    #mettre nom au magasin
     def get_nom_magasin(self):
         return self.__nom_magasin
     
+    #mettre adresse du magasin
     def get_adresse_magasin(self):
         return self.__adresse_magasin
     
@@ -213,19 +218,20 @@ class Projet:
         return self.__nom_projet == ""
 
 # -----------------------------------------------------------------------------
-# --- class ModeleMaxiMarket
+#  class modele MaxiMarket
 # -----------------------------------------------------------------------------
 class ModeleMaxiMarket:
     def __init__(self):
         self.plan = Plan()
         self.produits = Produits()
         self.projet = Projet()
-    
+    #permet de creer un nouveau projet du magasin ( nouveau nom / nouvelle disposition des produit / etc)
     def nouveau_projet(self, nom_projet: str, auteur: str, nom_magasin: str, adresse_magasin: str):
         self.projet.creer_projet(nom_projet, auteur, nom_magasin, adresse_magasin)
         self.plan = Plan()
         self.produits = Produits()
     
+    # permet d'utiliser un projet deja existant (plan du magasin / disposition des produits)
     def charger_projet(self, chemin_fichier: str) -> bool:
         if self.projet.charger_projet(chemin_fichier):
             data = self.projet.charger_donnees_projet(chemin_fichier)
@@ -251,12 +257,15 @@ class ModeleMaxiMarket:
                 return True
         return False
     
+    #permet de sauvegarder les modifs faites sur le projet
     def sauvegarder_projet(self) -> bool:
         return self.projet.sauvegarder_projet(self.plan, self.produits)
     
+    # permet de charger un plan de magasin pour un projet
     def charger_plan(self, chemin_plan: str) -> bool:
         return self.plan.charger_plan(chemin_plan)
     
+    #permet de chager une liste de produit present dans le magasin que l'on creer
     def charger_produits_depuis_fichier(self, chemin_json: str) -> bool:
         return self.produits.charger_depuis_fichier(chemin_json)
     
@@ -269,15 +278,15 @@ class ModeleMaxiMarket:
     def get_projet(self):
         return self.projet
 
-# Programme principal : test du modèle ----------------------------------------
+# Programme principal : test du modele
 if __name__ == "__main__":
     print('TEST: class ModeleMaxiMarket\n')
     
     modele = ModeleMaxiMarket()
     
-    # Test création projet
+    # test creation projet
     modele.nouveau_projet("Test Magasin", "Développeur", "SuperMarché", "123 Rue Test")
     print(f"Projet créé: {modele.projet.get_nom_projet()}")
     
-    # Test des produits
+    # test produits
     print(f"Catégories: {modele.produits.get_categories()}")

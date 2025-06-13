@@ -5,7 +5,7 @@ from controleur import ControleurMaxiMarket
 def main():
     app = QApplication(sys.argv)
      
-    # Créer le contrôleur 
+    #creer le controleur 
     controleur = ControleurMaxiMarket()
     
     sys.exit(app.exec())

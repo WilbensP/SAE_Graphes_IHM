@@ -4,7 +4,7 @@ from PyQt6.QtGui import QPen, QColor, QBrush
 from PyQt6.QtCore import Qt, pyqtSignal
 
 # -----------------------------------------------------------------------------
-# --- class SceneGraphique
+#  class scene graphique
 # -----------------------------------------------------------------------------
 class SceneGraphique(QGraphicsScene):
     produit_place = pyqtSignal(str, int, int)  
@@ -39,7 +39,7 @@ class SceneGraphique(QGraphicsScene):
         crayon_rouge = QPen(QColor(255, 0, 0))
         crayon_rouge.setWidth(1)
         
-        # Lignes horizontales
+        # ligne horizontales du plan
         for rang in range(nb_rangs + 1):
             y_line = rang * hauteur_case
             ligne = QGraphicsLineItem(0, y_line, largeur, y_line)
@@ -47,7 +47,7 @@ class SceneGraphique(QGraphicsScene):
             self.addItem(ligne)
             self.lignes_quadrillage.append(ligne)
         
-        # Lignes verticales
+        # lignes verticales du plan
         for rayon in range(nb_rayons + 1):
             x_line = rayon * largeur_case
             ligne = QGraphicsLineItem(x_line, 0, x_line, hauteur)
@@ -68,7 +68,7 @@ class SceneGraphique(QGraphicsScene):
         largeur_case = largeur / self.nb_rayons
         hauteur_case = hauteur / self.nb_rangs
         
-        # Ajouter les nouveaux rectangles
+        # ajouter nouveaux rectangles
         for (x, y), produit in placements.items():
             rect_x = x * largeur_case
             rect_y = y * hauteur_case
@@ -87,7 +87,7 @@ class SceneGraphique(QGraphicsScene):
         if not self.produit_a_placer or not self.plan_item:
             return
         
-        # Calculer la position dans la grille
+        #calculer position dans la grille
         pos = event.scenePos()
         largeur = self.plan_item.pixmap().width()
         hauteur = self.plan_item.pixmap().height()
@@ -98,13 +98,13 @@ class SceneGraphique(QGraphicsScene):
         x = int(pos.x() // largeur_case)
         y = int(pos.y() // hauteur_case)
         
-        # Vérifier les limites
+        # verifier limites
         if 0 <= x < self.nb_rayons and 0 <= y < self.nb_rangs:
             self.produit_place.emit(self.produit_a_placer, x, y)
             self.produit_a_placer = None
 
 # -----------------------------------------------------------------------------
-# --- class VueGraphique
+# class vue graphique
 # -----------------------------------------------------------------------------
 class VueGraphique(QGraphicsView):
     def __init__(self):
@@ -128,7 +128,7 @@ class VueGraphique(QGraphicsView):
             self.fitInView(self.scene_graphique.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
 # -----------------------------------------------------------------------------
-# --- class DialogNouveauProjet
+#  class nouveau projet
 # -----------------------------------------------------------------------------
 class DialogNouveauProjet(QDialog):
     def __init__(self, parent=None):
@@ -150,7 +150,7 @@ class DialogNouveauProjet(QDialog):
         layout.addRow("Nom du magasin:", self.nom_magasin)
         layout.addRow("Adresse du magasin:", self.adresse_magasin)
         
-        # Boutons
+        # bouton
         boutons_layout = QHBoxLayout()
         self.btn_ok = QPushButton("Créer")
         self.btn_annuler = QPushButton("Annuler")
@@ -161,7 +161,7 @@ class DialogNouveauProjet(QDialog):
         layout.addRow(boutons_layout)
         self.setLayout(layout)
         
-        # Connexions
+        # connexion
         self.btn_ok.clicked.connect(self.accept)
         self.btn_annuler.clicked.connect(self.reject)
     
@@ -174,7 +174,7 @@ class DialogNouveauProjet(QDialog):
         }
 
 # -----------------------------------------------------------------------------
-# --- class DialogSelectionProduits
+# class selection produit
 # -----------------------------------------------------------------------------
 class DialogSelectionProduits(QDialog):
     def __init__(self, categories_produits, parent=None):
@@ -191,21 +191,21 @@ class DialogSelectionProduits(QDialog):
     def init_ui(self):
         layout = QVBoxLayout()
         
-        # Instructions
+        
         label = QLabel("Sélectionnez les produits vendus dans ce magasin :")
         layout.addWidget(label)
         
-        # Zone de défilement
+        # widget scroll
         scroll = QScrollArea()
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout()
         
-        # Créer les groupes par catégorie
+        #groupes par catégorie de produit
         for categorie, produits in self.categories_produits.items():
             group = QGroupBox(categorie)
             group_layout = QVBoxLayout()
             
-            # Cases cocher produit
+            #case à cocher produit
             for produit in produits:
                 cb = QCheckBox(produit)
                 self.checkboxes[produit] = cb
@@ -218,7 +218,7 @@ class DialogSelectionProduits(QDialog):
         scroll.setWidget(scroll_widget)
         layout.addWidget(scroll)
         
-        # Boutons
+        # bouton
         boutons_layout = QHBoxLayout()
         self.btn_ok = QPushButton("Valider")
         self.btn_annuler = QPushButton("Annuler")
@@ -229,7 +229,7 @@ class DialogSelectionProduits(QDialog):
         layout.addLayout(boutons_layout)
         self.setLayout(layout)
         
-        # Connexions
+        # connexion
         self.btn_ok.clicked.connect(self.accept)
         self.btn_annuler.clicked.connect(self.reject)
     
@@ -242,10 +242,10 @@ class DialogSelectionProduits(QDialog):
         return [produit for produit, cb in self.checkboxes.items() if cb.isChecked()]
 
 # -----------------------------------------------------------------------------
-# --- class PanneauControle
+# class panneau controle
 # -----------------------------------------------------------------------------
 class PanneauControle(QWidget):
-    # Signaux
+    # signaux
     signal_nouveau_projet = pyqtSignal()
     signal_ouvrir_projet = pyqtSignal()
     signal_sauvegarder_projet = pyqtSignal()
@@ -262,7 +262,7 @@ class PanneauControle(QWidget):
     def init_ui(self):
         layout = QVBoxLayout()
         
-        # Gestion du projet
+        # gestion du projet
         projet_group = QGroupBox("Projet")
         projet_layout = QVBoxLayout()
         
@@ -286,12 +286,12 @@ class PanneauControle(QWidget):
         projet_group.setLayout(projet_layout)
         layout.addWidget(projet_group)
         
-        # Informations du projet
+        # info sur le projet si aucun projet present
         self.label_projet_info = QLabel("Aucun projet ouvert")
         self.label_projet_info.setStyleSheet("font-weight: bold; padding: 5px; background-color: #f0f0f0;")
         layout.addWidget(self.label_projet_info)
         
-        # Gestion du plan
+        # gestion du plan du magasin
         plan_group = QGroupBox("Plan du Magasin")
         plan_layout = QVBoxLayout()
         
@@ -302,7 +302,7 @@ class PanneauControle(QWidget):
         self.label_plan_info = QLabel("Aucun plan chargé")
         plan_layout.addWidget(self.label_plan_info)
         
-        # Contrôles du quadrillage
+        # controles du quadrillage largeur et longueur
         quad_layout = QHBoxLayout()
         quad_layout.addWidget(QLabel("Rangs:"))
         self.spin_rangs = QSpinBox()
@@ -322,7 +322,7 @@ class PanneauControle(QWidget):
         plan_group.setLayout(plan_layout)
         layout.addWidget(plan_group)
         
-        # Gestion des produits
+        # gerer les produits présent dans le magasin
         produits_group = QGroupBox("Produits du Magasin")
         produits_layout = QVBoxLayout()
         
@@ -337,7 +337,7 @@ class PanneauControle(QWidget):
         produits_group.setLayout(produits_layout)
         layout.addWidget(produits_group)
         
-        # Table des placements
+        # placer les produits dans le quadrillage du magasin
         placement_group = QGroupBox("Produits Placés")
         placement_layout = QVBoxLayout()
         
@@ -361,7 +361,7 @@ class PanneauControle(QWidget):
             produit = texte.replace(" (non placé)", "")
             self.signal_produit_selectionne_placement.emit(produit)
     
-    # Méthodes de mise à jour
+    #  mise à jour piur le projet
     def mettre_a_jour_projet_info(self, info):
         self.label_projet_info.setText(info)
     
@@ -390,10 +390,11 @@ class PanneauControle(QWidget):
         self.spin_rayons.setValue(rayons)
 
 # -----------------------------------------------------------------------------
-# --- class VueMaxiMarket
+#  class vue maxiMarket
 # -----------------------------------------------------------------------------
 class VueMaxiMarket(QMainWindow):
-    # Signaux vers l'extérieur
+    # signaux vers l'exterieur
+    
     signal_nouveau_projet = pyqtSignal()
     signal_ouvrir_projet = pyqtSignal()
     signal_sauvegarder_projet = pyqtSignal()
@@ -417,18 +418,18 @@ class VueMaxiMarket(QMainWindow):
         central_widget = QWidget()
         main_layout = QHBoxLayout()
         
-        # plan
+        # plan du magasin
         self.vue_graphique = VueGraphique()
         main_layout.addWidget(self.vue_graphique, stretch=3)
         
-        # Panneau de contrôle
+        # panneau de controle
         self.panneau_controle = PanneauControle()
         main_layout.addWidget(self.panneau_controle, stretch=1)
         
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
         
-        # Connexion des signaux
+        # connexion au différents signaux
         self.panneau_controle.signal_nouveau_projet.connect(self.signal_nouveau_projet.emit)
         self.panneau_controle.signal_ouvrir_projet.connect(self.signal_ouvrir_projet.emit)
         self.panneau_controle.signal_sauvegarder_projet.connect(self.signal_sauvegarder_projet.emit)
@@ -439,7 +440,7 @@ class VueMaxiMarket(QMainWindow):
         self.panneau_controle.signal_supprimer_projet.connect(self.signal_supprimer_projet.emit)
         self.vue_graphique.scene_graphique.produit_place.connect(self.signal_produit_place.emit)
     
-    # Méthodes de mise à jour de la vue
+    # methode pour mettre à jour la vue
     def afficher_plan(self, pixmap, nb_rangs, nb_rayons):
         self.vue_graphique.afficher_plan(pixmap, nb_rangs, nb_rayons)
     
@@ -472,7 +473,7 @@ class VueMaxiMarket(QMainWindow):
         dialog = DialogSelectionProduits(categories_produits, self)
         return dialog.exec(), dialog.get_produits_selectionnes() if dialog.result() else None
 
-## Programme principal : test de la vue ---------------------------------------
+## Programme principal : test de la vue 
 if __name__ == "__main__":
     print(f' --- main --- ')
     app = QApplication(sys.argv)

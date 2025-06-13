@@ -1,16 +1,16 @@
 import os
 from PyQt6.QtCore import QObject
 from PyQt6.QtWidgets import QMessageBox
-from modele import ProjetModel, ProduitsModel, CalculChemin
+from modele import ProjetModel, ProduitsModel, CalculChemin, copier_fichier
 from vue import MaxiMarketMainWindow
 
+
 class MaxiMarketController(QObject):
-    """Contrôleur principal de l'application MaxiMarket"""
-    
+        
     def __init__(self):
         super().__init__()
         
-        # Icreation modeles
+        # creation modeles
         self.projet_model = ProjetModel()
         self.produits_model = ProduitsModel()
         self.calcul_chemin = CalculChemin()
@@ -18,7 +18,7 @@ class MaxiMarketController(QObject):
         # creation vue
         self.view = MaxiMarketMainWindow()
         
-        # signaux
+        # Connexion 
         self.connecter_signaux()
         
         # Variables
@@ -29,10 +29,8 @@ class MaxiMarketController(QObject):
         self.charger_projets_disponibles()
     
     def connecter_signaux(self):
-        """Connecte tous les signaux entre les modèles et la vue"""
         
-        # Signaux controleur
-        self.view.ouvrir_projet_demande.connect(self.ouvrir_projet)
+        # Signaux contrôleur
         self.view.produit_selectionne.connect(self.selection_produit)
         self.view.ajouter_produit_demande.connect(self.ajouter_produit_liste)
         self.view.produit_liste_selectionne.connect(self.produit_liste_selectionne)
@@ -40,6 +38,7 @@ class MaxiMarketController(QObject):
         self.view.reinitialiser_liste_demande.connect(self.reinitialiser_liste)
         self.view.enregistrer_liste_demande.connect(self.enregistrer_liste)
         self.view.calculer_chemin_demande.connect(self.calculer_chemin)
+        self.view.projet_combo.currentIndexChanged.connect(self.on_projet_combo_change)
         
         # Signaux controleur
         self.projet_model.projet_charge.connect(self.projet_charge)
@@ -48,20 +47,29 @@ class MaxiMarketController(QObject):
         self.produits_model.liste_generee.connect(self.liste_generee)
     
     def charger_projets_disponibles(self):
-        """Charge la liste des projets disponibles"""
         projets = self.projet_model.get_projets_disponibles()
         self.view.mettre_a_jour_projets(projets)
     
-    def ouvrir_projet(self):
-        """Gère l'ouverture d'un projet existant"""
-        index = self.view.projet_combo.currentIndex()
-        if index >= 0:
-            fichier = self.view.projet_combo.itemData(index)
-            if fichier:
+    def charger_projet_defaut(self):
+        # cherche dans dossier 
+        dossier_projets = self.projet_model.dossier_projets
+        if os.path.exists(dossier_projets):
+            for fichier in os.listdir(dossier_projets):
+                if fichier.endswith('.json'):
+                    chemin_fichier = os.path.join(dossier_projets, fichier)
+                    self.charger_projet(chemin_fichier)
+                    return
+        
+        # si rien 
+        for fichier in os.listdir('.'):
+            if fichier.endswith('.json'):
                 self.charger_projet(fichier)
+                return
+        
+        # message d'erreur
+        self.view.afficher_message("Erreur", "Aucun fichier de projet (.json) trouvé. Veuillez placer un fichier de projet dans le dossier de l'application ou dans le sous-dossier 'projets'.", "error")
     
     def charger_projet(self, fichier):
-        """Charge un projet depuis un fichier"""
         try:
             import json
             with open(fichier, "r", encoding="utf-8") as f:
@@ -71,18 +79,11 @@ class MaxiMarketController(QObject):
             chemin_plan = os.path.join(dossier_projet, projet["chemin_plan"])
             
             if not os.path.exists(chemin_plan):
-                reponse = QMessageBox.question(
-                    self.view, "Plan manquant",
-                    f"Le plan '{projet['chemin_plan']}' est introuvable. Voulez-vous sélectionner un autre plan ?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-                )
+                reponse = QMessageBox.question(self.view, "Plan manquant",f"Le plan '{projet['chemin_plan']}' est introuvable. Voulez-vous sélectionner un autre plan ?",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
                 
                 if reponse == QMessageBox.StandardButton.Yes:
-                    nouveau_plan = self.view.demander_fichier_ouvrir(
-                        "Sélectionner un plan", "", "Images (*.jpg *.png)"
-                    )
+                    nouveau_plan = self.view.demander_fichier_ouvrir("Sélectionner un plan", "", "Images (*.jpg *.png)")
                     if nouveau_plan:
-                        from modele import copier_fichier
                         copier_fichier(nouveau_plan, chemin_plan)
                     else:
                         return
@@ -95,8 +96,7 @@ class MaxiMarketController(QObject):
             self.view.afficher_message("Erreur", f"Impossible de charger le projet:\n{str(e)}", "error")
     
     def projet_charge(self, projet):
-        """Callback appelé quand un projet est chargé"""
-        # fenetre
+        # Maj fenetre
         nom_magasin = projet.get('nom_magasin', 'Plan du magasin')
         self.view.mettre_a_jour_titre(f"MaxiMarket - {nom_magasin}")
         
@@ -122,22 +122,19 @@ class MaxiMarketController(QObject):
         if "produits_magasin" in projet:
             self.produits_model.charger_produits(projet["produits_magasin"])
         
-        # Vider liste de courses et chemin
+        # Vider liste courses et chemin
         self.view.vider_liste()
         self.view.vider_table_chemin()
         self.chemin_courant = []
     
     def afficher_erreur(self, message):
-        """Affiche un message d'erreur"""
         self.view.afficher_message("Erreur", message, "error")
     
     def produits_charges(self, produits):
-        """Callback appelé quand les produits sont chargés"""
         self.tous_produits = produits
         self.view.mettre_a_jour_produits(produits)
     
     def selection_produit(self, produit):
-        """Gère la sélection d'un produit"""
         self.view.mettre_a_jour_produit_selectionne(produit)
         if produit:
             scene = self.view.get_rendu().scene()
@@ -145,18 +142,15 @@ class MaxiMarketController(QObject):
             self.view.get_rendu().centrer_sur_point(point_central)
     
     def ajouter_produit_liste(self, produit, quantite):
-        """Ajoute un produit à la liste de courses"""
         if self.produits_model.ajouter_produit_liste(produit):
             self.view.ajouter_item_liste(produit)
     
     def produit_liste_selectionne(self, produit):
-        """Gère la sélection d'un produit dans la liste"""
         scene = self.view.get_rendu().scene()
         point_central = scene.mettre_en_evidence_produit(produit)
         self.view.get_rendu().centrer_sur_point(point_central)
     
     def generer_liste_aleatoire(self):
-        """Génère une liste aléatoire de produits"""
         if not self.tous_produits:
             self.view.afficher_message("Avertissement", "Aucun produit disponible.", "warning")
             return
@@ -164,7 +158,6 @@ class MaxiMarketController(QObject):
         self.produits_model.generer_liste_aleatoire()
     
     def liste_generee(self, produits):
-        """Callback appelé quand une liste est générée"""
         self.view.vider_liste()
         for produit in produits:
             self.view.ajouter_item_liste(produit)
@@ -176,7 +169,6 @@ class MaxiMarketController(QObject):
         self.chemin_courant = []
     
     def reinitialiser_liste(self):
-        """Remet à zéro la liste de courses"""
         self.produits_model.reinitialiser_liste()
         self.view.vider_liste()
         
@@ -187,15 +179,12 @@ class MaxiMarketController(QObject):
         self.chemin_courant = []
     
     def enregistrer_liste(self):
-        """Enregistre la liste de courses"""
         liste_courses = self.produits_model.get_liste_courses()
         if not liste_courses:
             self.view.afficher_message("Info", "La liste est vide, rien à enregistrer.")
             return
         
-        fichier = self.view.demander_fichier_sauvegarder(
-            "Enregistrer la liste", "", "Fichiers texte (*.txt)"
-        )
+        fichier = self.view.demander_fichier_sauvegarder("Enregistrer la liste", "", "Fichiers texte (*.txt)")
         
         if fichier:
             projet = self.projet_model.get_projet_actuel()
@@ -207,13 +196,12 @@ class MaxiMarketController(QObject):
                 self.view.afficher_message("Erreur", "Impossible d'enregistrer la liste.", "error")
     
     def calculer_chemin(self):
-        """Calcule et affiche le chemin optimal"""
         liste_courses = self.produits_model.get_liste_courses()
         if not liste_courses:
             self.view.afficher_message("Info", "La liste est vide, impossible de calculer un chemin.")
             return
         
-        # Recuperer placements produits
+        # Recuperer produits
         scene = self.view.get_rendu().scene()
         placements = scene.coordonnees_produits
         
@@ -221,19 +209,22 @@ class MaxiMarketController(QObject):
         self.chemin_courant = self.calcul_chemin.calculer_chemin_optimal(liste_courses, placements)
         
         if self.chemin_courant:
-            # Afficher chemin 
+            # Afficher chemin
             scene.afficher_chemin(self.chemin_courant)
             
-            # table 
+            # Maj table informations
             self.view.mettre_a_jour_table_chemin(self.chemin_courant)
             
-            self.view.afficher_message(
-                "Chemin calculé",
-                f"Le chemin a été calculé pour {len(self.chemin_courant)} produits."
-            )
+            self.view.afficher_message("Chemin calculé",f"Le chemin a été calculé pour {len(self.chemin_courant)} produits.")
         else:
             self.view.afficher_message("Info", "Impossible de calculer un chemin avec les produits sélectionnés.")
     
     def get_view(self):
-        """Retourne la vue principale"""
         return self.view
+
+    def on_projet_combo_change(self):
+        index = self.view.projet_combo.currentIndex()
+        if index >= 0:
+            fichier = self.view.projet_combo.itemData(index)
+            if fichier:
+                self.charger_projet(fichier)
