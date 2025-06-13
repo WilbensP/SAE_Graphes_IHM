@@ -5,21 +5,21 @@ from modele import ModeleMaxiMarket
 from vue import VueMaxiMarket
 
 # -----------------------------------------------------------------------------
-# --- class ControleurMaxiMarket
+#  class controleur MaxiMarket
 # -----------------------------------------------------------------------------
 class ControleurMaxiMarket:
     def __init__(self):
-        # Création du modèle et de la vue
+        # creation du modele et de la vue
         self.modele = ModeleMaxiMarket()
         self.vue = VueMaxiMarket()
         
-        # Affichage de la vue
+        # affichage de la vue
         self.vue.show()
         
-        # Mise à jour initiale de la vue
+        # mise à jour de la vue
         self.maj_vue()
         
-        # Connexion des signaux de la vue vers les slots du contrôleur
+        # connexion des signaux de la vue vers les slots du contrôleur
         self.vue.signal_nouveau_projet.connect(self.nouveau_projet)
         self.vue.signal_ouvrir_projet.connect(self.ouvrir_projet)
         self.vue.signal_sauvegarder_projet.connect(self.sauvegarder_projet)
@@ -32,20 +32,20 @@ class ControleurMaxiMarket:
 
     
     def maj_vue(self):
-        # Afficher le plan
+        # afficher le plan
         plan = self.modele.get_plan()
         pixmap = plan.get_pixmap()
         if pixmap:
             self.vue.afficher_plan(pixmap, plan.get_nb_rangs(), plan.get_nb_rayons())
             
         
-        # Mettre à jour les informations du projet
+        # mettre à jour les informations du projet
         projet = self.modele.get_projet()
         if not projet.est_vide():
             info = f"Projet: {projet.get_nom_projet()} | Auteur: {projet.get_auteur()} | Magasin: {projet.get_nom_magasin()}"
             self.vue.mettre_a_jour_projet_info(info)
         
-        # Mettre à jour les produits et placements
+        #mettre à jour les produits et leur placements
         produits = self.modele.get_produits()
         produits_magasin = produits.get_produits_magasin()
         placements = produits.get_placements()
@@ -54,10 +54,10 @@ class ControleurMaxiMarket:
         self.vue.mettre_a_jour_table_placements(placements)
         self.vue.afficher_placements(placements)
         
-        # Mettre à jour les valeurs du quadrillage
+        # mettre à jour les valeurs du quadrillage
         self.vue.set_quadrillage_values(plan.get_nb_rangs(), plan.get_nb_rayons())
     
-    # Slots du contrôleur
+    # slots du contrôleur
     def nouveau_projet(self):
         result, data = self.vue.show_dialog_nouveau_projet()
         
@@ -69,7 +69,7 @@ class ControleurMaxiMarket:
                 data['adresse_magasin']
             )
             
-            # Mettre à jour la vue
+            # mettre à jour la vue
             self.maj_vue()
             
             QMessageBox.information(
@@ -83,7 +83,7 @@ class ControleurMaxiMarket:
                 "Erreur",
                 "Tous les champs sont obligatoires."
             )
-    
+    #creer un nouveau fichier Json pour nouveau magasin
     def ouvrir_projet(self):
         fichier, _ = QFileDialog.getOpenFileName(
             self.vue,
@@ -122,7 +122,7 @@ class ControleurMaxiMarket:
                     "Erreur",
                     f"Erreur lors de l'ouverture du projet:\n{str(e)}"
                 )
-    
+    # sauvegarder le projet en cours
     def sauvegarder_projet(self):
         projet = self.modele.get_projet()
         
@@ -154,7 +154,7 @@ class ControleurMaxiMarket:
                 "Erreur",
                 f"Erreur lors de la sauvegarde:\n{str(e)}"
             )
-    
+    #charger un projet (fichier Json) deja fait 
     def charger_plan(self):
         projet = self.modele.get_projet()
         
@@ -198,6 +198,7 @@ class ControleurMaxiMarket:
                     f"Erreur lors du chargement du plan:\n{str(e)}"
                 )
     
+    #permet de selectionner les produit dans la liste en cochant les cases
     def selectionner_produits(self):
         projet = self.modele.get_projet()
         
@@ -209,17 +210,17 @@ class ControleurMaxiMarket:
             )
             return
         
-        # Obtenir les catégories de produits disponibles
+        # obtenir les catégories de produits disponibles
         produits = self.modele.get_produits()
         categories = produits.get_tous_produits_disponibles()
         
         result, produits_selectionnes = self.vue.show_dialog_selection_produits(categories)
         
         if result and produits_selectionnes:
-            # Mettre à jour le modèle
+            # mettre à jour le modèle
             produits.set_produits_magasin(produits_selectionnes)
             
-            # Mettre à jour la vue
+            #mettre à jour la vue
             placements = produits.get_placements()
             self.vue.mettre_a_jour_produits(produits_selectionnes, placements)
             self.vue.mettre_a_jour_table_placements(placements)
@@ -229,11 +230,11 @@ class ControleurMaxiMarket:
         plan.set_nb_rangs(nb_rangs)
         plan.set_nb_rayons(nb_rayons)
         
-        # Mettre à jour l'affichage
+        # mettre à jour l'affichage
         if plan.get_pixmap():
             self.vue.afficher_plan(plan.get_pixmap(), nb_rangs, nb_rayons)
             
-            # Réafficher les placements
+            # reafficher le placement des produit
             placements = self.modele.get_produits().get_placements()
             self.vue.afficher_placements(placements)
     
@@ -246,11 +247,11 @@ class ControleurMaxiMarket:
         )
     
     def produit_place(self, produit, x, y):
-        # Mettre à jour le modèle
+        # mettre à jour le modèle
         produits = self.modele.get_produits()
         produits.placer_produit(produit, x, y)
         
-        # Mettre à jour la vue
+        # mettre à jour la vue
         produits_magasin = produits.get_produits_magasin()
         placements = produits.get_placements()
         
@@ -264,7 +265,7 @@ class ControleurMaxiMarket:
             f"'{produit}' placé en position ({x}, {y})."
         )
 
-
+    #permet de supprimet les projet ouvert (supprime le fichier Json)
     def supprimer_projet(self):
         projet = self.modele.get_projet()
         
@@ -310,7 +311,7 @@ class ControleurMaxiMarket:
                         f"Erreur lors de la suppression du projet:\n{str(e)}"
                     )
 
-# Programme principal : test du contrôleur ------------------------------------
+# programme principal : test du contrôleur 
 if __name__ == "__main__":
     print('TEST: class ControleurMaxiMarket')
     
